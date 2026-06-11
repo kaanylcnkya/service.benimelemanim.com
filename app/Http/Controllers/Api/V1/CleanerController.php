@@ -37,8 +37,15 @@ class CleanerController extends Controller
         }
 
         if ($request->filled('service_type')) {
-            $query->whereHas('cleanerProfile', function ($query) use ($request) {
-                $query->whereJsonContains('services', $request->input('service_type'));
+            $serviceType = trim((string) $request->input('service_type'));
+
+            $query->whereHas('cleanerProfile', function ($query) use ($serviceType) {
+                $query->where(function ($subQuery) use ($serviceType) {
+                    $subQuery
+                        ->whereJsonContains('services', $serviceType)
+                        ->orWhere('services', 'LIKE', '%"' . $serviceType . '"%')
+                        ->orWhere('services', 'LIKE', '%' . $serviceType . '%');
+                });
             });
         }
 
