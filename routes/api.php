@@ -13,20 +13,36 @@ Route::get('/health', function () {
 });
 
 Route::prefix('v1')->group(function () {
-    Route::middleware('throttle:api')->group(function () {
-        Route::get('/locations/cities', [LocationController::class, 'cities']);
+    /*
+    |--------------------------------------------------------------------------
+    | Public Location Routes
+    |--------------------------------------------------------------------------
+    | İl / ilçe seçimleri kayıt formlarında kullanılacağı için giriş gerektirmez.
+    */
+    Route::get('/locations/cities', [LocationController::class, 'cities']);
 
-        Route::get('/locations/cities/{cityId}/districts', [LocationController::class, 'districts'])
-            ->whereNumber('cityId');
-    });
+    Route::get('/locations/cities/{cityId}/districts', [LocationController::class, 'districts'])
+        ->whereNumber('cityId');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Public Auth Routes
+    |--------------------------------------------------------------------------
+    | Kayıt ve giriş herkese açık ama AppServiceProvider içinde auth-api rate limit tanımlı olmalı.
+    */
     Route::middleware('throttle:auth-api')->group(function () {
         Route::post('/auth/register/customer', [AuthController::class, 'registerCustomer']);
         Route::post('/auth/register/cleaner', [AuthController::class, 'registerCleaner']);
         Route::post('/auth/login', [AuthController::class, 'login']);
     });
 
-    Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | Protected Auth Routes
+    |--------------------------------------------------------------------------
+    | Bunlar token olmadan çalışmaz.
+    */
+    Route::middleware('auth:sanctum')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
     });

@@ -16,17 +16,15 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by(
-                optional($request->user())->id ?: $request->ip()
-            );
-        });
-
         RateLimiter::for('auth-api', function (Request $request) {
             return [
                 Limit::perMinute(10)->by($request->ip()),
+
                 Limit::perMinute(5)->by(
-                    (string) $request->input('login', $request->input('email', $request->ip()))
+                    (string) $request->input(
+                        'login',
+                        $request->input('email', $request->ip())
+                    )
                 ),
             ];
         });
