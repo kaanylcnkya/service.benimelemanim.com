@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\LocationController;
 use App\Http\Controllers\Api\V1\JobRequestController;
+use App\Http\Controllers\Api\V1\CleanerController;
 
 Route::get('/health', function () {
     return response()->json([
@@ -19,6 +20,9 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/locations/cities/{cityId}/districts', [LocationController::class, 'districts'])
             ->whereNumber('cityId');
+
+        Route::get('/cleaners', [CleanerController::class, 'index']);
+        Route::get('/cleaners/{id}', [CleanerController::class, 'show'])->whereNumber('id');
     });
 
     Route::middleware('throttle:10,1')->group(function () {
