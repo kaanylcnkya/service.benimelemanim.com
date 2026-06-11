@@ -25,10 +25,6 @@ class JobRequestController extends Controller
             ->where('status', 'open')
             ->latest();
 
-        if ($user->role === 'cleaner') {
-            $query->where('city_id', $user->city_id);
-        }
-
         if ($request->filled('city_id')) {
             $query->where('city_id', $request->integer('city_id'));
         }
