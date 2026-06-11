@@ -17,20 +17,22 @@ Route::prefix('v1')->group(function () {
     |--------------------------------------------------------------------------
     | Public Location Routes
     |--------------------------------------------------------------------------
-    | İl / ilçe seçimleri kayıt formlarında kullanılacağı için giriş gerektirmez.
+    | İl / ilçe endpointleri herkese açık.
     */
-    Route::get('/locations/cities', [LocationController::class, 'cities']);
+    Route::middleware('throttle:120,1')->group(function () {
+        Route::get('/locations/cities', [LocationController::class, 'cities']);
 
-    Route::get('/locations/cities/{cityId}/districts', [LocationController::class, 'districts'])
-        ->whereNumber('cityId');
+        Route::get('/locations/cities/{cityId}/districts', [LocationController::class, 'districts'])
+            ->whereNumber('cityId');
+    });
 
     /*
     |--------------------------------------------------------------------------
     | Public Auth Routes
     |--------------------------------------------------------------------------
-    | Kayıt ve giriş herkese açık ama AppServiceProvider içinde auth-api rate limit tanımlı olmalı.
+    | Kayıt / giriş endpointleri herkese açık ama daha sıkı limitli.
     */
-    Route::middleware('throttle:auth-api')->group(function () {
+    Route::middleware('throttle:10,1')->group(function () {
         Route::post('/auth/register/customer', [AuthController::class, 'registerCustomer']);
         Route::post('/auth/register/cleaner', [AuthController::class, 'registerCleaner']);
         Route::post('/auth/login', [AuthController::class, 'login']);
@@ -40,9 +42,9 @@ Route::prefix('v1')->group(function () {
     |--------------------------------------------------------------------------
     | Protected Auth Routes
     |--------------------------------------------------------------------------
-    | Bunlar token olmadan çalışmaz.
+    | Token zorunlu.
     */
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
     });
