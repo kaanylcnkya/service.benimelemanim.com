@@ -29,6 +29,10 @@ class AuthController extends Controller
                 'district_id' => $validated['district_id'],
                 'password' => $validated['password'],
                 'is_active' => true,
+                'kvkk_accepted_at' => now(),
+                'terms_accepted_at' => now(),
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
             ]);
         });
 

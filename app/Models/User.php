@@ -23,6 +23,10 @@ class User extends Authenticatable
         'password',
         'is_active',
         'last_login_at',
+        'kvkk_accepted_at',
+        'terms_accepted_at',
+        'ip_address',
+        'user_agent',
     ];
 
     protected $hidden = [
@@ -35,6 +39,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'kvkk_accepted_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
             'is_active' => 'boolean',
             'password' => 'hashed',
         ];
