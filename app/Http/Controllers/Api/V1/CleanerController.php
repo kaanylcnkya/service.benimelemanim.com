@@ -9,11 +9,15 @@ use App\Http\Controllers\Controller;
 
 class CleanerController extends Controller
 {
+    
     public function index(Request $request): JsonResponse
     {
         $user = $request->user('sanctum');
 
         $showContact = $user && in_array($user->role, ['customer', 'admin'], true);
+
+        $perPage = (int) $request->input('per_page', 12);
+        $perPage = max(1, min($perPage, 30));
 
         $query = User::query()
             ->with(['city:id,il_adi', 'district:id,ilce_adi', 'cleanerProfile'])
@@ -32,13 +36,28 @@ class CleanerController extends Controller
             $query->where('district_id', $request->integer('district_id'));
         }
 
-        $cleaners = $query
-            ->limit(100)
-            ->get()
-            ->map(fn (User $cleaner) => $this->cleanerResponse($cleaner, $showContact));
+        if ($request->filled('service_type')) {
+            $query->whereHas('cleanerProfile', function ($query) use ($request) {
+                $query->whereJsonContains('services', $request->input('service_type'));
+            });
+        }
+
+        $paginator = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $cleaners,
+            'data' => $paginator
+                ->getCollection()
+                ->map(fn (User $cleaner) => $this->cleanerResponse($cleaner, $showContact))
+                ->values(),
+
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+            ],
         ]);
     }
 
